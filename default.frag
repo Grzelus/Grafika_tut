@@ -1,12 +1,16 @@
 #version 330 core
+
 out vec4 FragColor;
 
-in vec3 color;
-in vec2 TexCoord;
+// Odbieramy wartości z Vertex Shadera
+in vec3 Normal;
+in vec2 texCoord;
 
+// Nasza tekstura przesyłana z C++
 uniform sampler2D tex0;
 
 void main()
 {
-   FragColor = texture(tex0, TexCoord);
+    // Czytamy kolor z tekstury na podstawie koordynatów UV
+    FragColor = texture(tex0, texCoord);
 }

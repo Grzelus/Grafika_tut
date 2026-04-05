@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="EBO.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="ShaderClass.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="VAO.h" />
@@ -165,6 +166,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\..\Users\Dzieciaki\Downloads\dirt.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Grafika_tut.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

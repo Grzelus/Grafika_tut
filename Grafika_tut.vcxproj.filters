@@ -19,6 +19,9 @@
     <Filter Include="Pliki zasobów\Textures">
       <UniqueIdentifier>{871b38ed-252a-4216-a0eb-dc90192d52d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Pliki zasobów\Assets">
+      <UniqueIdentifier>{befc31b9-e7d4-4c5e-895e-14132d06e818}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -76,10 +79,18 @@
     <ClInclude Include="Camera.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\..\Users\Dzieciaki\Downloads\dirt.jpg">
       <Filter>Pliki zasobów\Textures</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Grafika_tut.rc">
+      <Filter>Pliki zasobów</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
