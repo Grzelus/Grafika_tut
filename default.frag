@@ -2,15 +2,15 @@
 
 out vec4 FragColor;
 
-// Odbieramy wartości z Vertex Shadera
+// Odbieranie danych, które wypluł Vertex Shader
 in vec3 Normal;
 in vec2 texCoord;
 
-// Nasza tekstura przesyłana z C++
+// Nasza tekstura (np. ziemia, ściany itp.) połączona z jednostką teksturującą
 uniform sampler2D tex0;
 
 void main()
 {
-    // Czytamy kolor z tekstury na podstawie koordynatów UV
+    // Czytamy kolor z piksela tekstury
     FragColor = texture(tex0, texCoord);
 }

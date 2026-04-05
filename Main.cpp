@@ -1,6 +1,6 @@
-#define TINYOBJLOADER_IMPLEMENTATION
-#include "tinyobjloader.h"
-
+#include "Model.h"
+#include <stdexcept>
+#include <string>
 #include<iostream>
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
@@ -17,50 +17,7 @@
 #include<glm/glm.hpp>
 #include <vector>
 
-struct Vertex {
-    glm::vec3 position;
-    glm::vec3 normal;
-    glm::vec2 texCoord;
-};
 
-std::vector<Vertex> loadModel(const char* path) {
-	std::vector<Vertex> vertices;
-	tinyobj::attrib_t attrib;
-	std::vector<tinyobj::shape_t> shapes;
-	std::vector<tinyobj::material_t> materials;
-    std::string warn, err;
-
-	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path)) {
-		throw std::runtime_error(warn + err);
-    }
-
-    for (const auto& shape : shapes) {
-        for (const auto& index : shape.mesh.indices) {
-            Vertex vertex;
-
-            vertex.position = {
-				attrib.vertices[3 * index.vertex_index + 0],
-				attrib.vertices[3 * index.vertex_index + 1],
-				attrib.vertices[3 * index.vertex_index + 2]
-            };
-            if (index.normal_index >= 0) {
-                vertex.normal = {
-                    attrib.normals[3 * index.normal_index + 0],
-                    attrib.normals[3 * index.normal_index + 1],
-                    attrib.normals[3 * index.normal_index + 2]
-                };
-            };
-            if (index.texcoord_index >= 0) {
-                vertex.texCoord = {
-                    attrib.texcoords[2 * index.texcoord_index + 0],
-                    attrib.texcoords[2 * index.texcoord_index + 1]
-				};
-            };
-			vertices.push_back(vertex);
-        }
-    }
-	return vertices;
-}
 
 // --- STA£E I DANE ---
 const float width = 800.0f;
@@ -121,20 +78,15 @@ GLuint setupTexture(const char* path) {
 
 
 // 4. Rysowanie obiektów
-void renderScene(VAO& vao1, GLuint texture, Shader& shader, float Time, Camera& camera, int vertexCount) {
+void renderScene( GLuint texture, Shader& shader, float Time, Camera& camera) {
 
    
-    vao1.Bind();
-
+ 
     camera.Matrix(45.0f, 0.1f, 100.0f, shader, "camMatrix");
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    glDrawArrays(GL_TRIANGLES, 0, vertexCount);
-
-
-    vao1.Unbind();
 }
 
 // --- MAIN ---
@@ -144,20 +96,25 @@ int main() {
 
     Shader shaderProgram("default.vert", "default.frag");
 
-	std::vector<Vertex> paintingModel = loadModel("assets/painting.obj");
+
+    // LADOWANIE MODELI
+
+    Model walls("assets/walls.obj");
+    walls.Move(glm::vec3(0.000f, 0.000f, -0.000f));
+
+    Model floor("assets/floor.obj");
+    floor.Move(glm::vec3(0.000f, 0.000f, -0.000f));
+
+    Model display("assets/display.obj");
+    display.Move(glm::vec3(0.000f, 0.000f, 2.899f));
+
+    Model frame("assets/frame.obj");
+    frame.Move(glm::vec3(0.000f, 1.077f, 2.768f));
+
+    Model painting("assets/painting.obj");
+    painting.Move(glm::vec3(-0.000f, 1.077f, 2.603f));
 
 
-    // VAO1: Painting
-    VAO VAO1;
-    VAO1.Bind();
-    VBO VBO1(paintingModel.data(), paintingModel.size() * sizeof(Vertex));
-    VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, sizeof(Vertex), (void*)0);
-    VAO1.LinkAttrib(VBO1, 1, 3, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, normal));
-    VAO1.LinkAttrib(VBO1, 2, 2, GL_FLOAT, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
-
-    VAO1.Unbind();
-
-    
 
     GLuint texture = setupTexture("assets/dirt.jpg");
 
@@ -177,14 +134,19 @@ int main() {
 
         float Time = glfwGetTime();
         // Wyrenderuj klatkê
-        renderScene(VAO1, texture, shaderProgram, Time, camera, paintingModel.size());
+        renderScene(texture, shaderProgram, Time, camera);
+
+		frame.Draw(shaderProgram);
+        walls.Draw(shaderProgram);
+        floor.Draw(shaderProgram);
+        painting.Draw(shaderProgram);
+        display.Draw(shaderProgram);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
     // Sprz¹tanie
-    VAO1.Delete(); VBO1.Delete();
     shaderProgram.Delete();
     glfwDestroyWindow(window);
     glfwTerminate();
