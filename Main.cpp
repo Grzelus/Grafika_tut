@@ -99,20 +99,65 @@ int main() {
 
     // LADOWANIE MODELI
 
+// --- LADOWANIE I TRANSFORMACJA MODELI ---
     Model walls("assets/walls.obj");
-    walls.Move(glm::vec3(0.000f, 0.000f, -0.000f));
+    walls.Transform(glm::vec3(0.000f, 0.000f, -0.000f), glm::vec3(0.000f, 0.000f, -0.000f));
 
     Model floor("assets/floor.obj");
-    floor.Move(glm::vec3(0.000f, 0.000f, -0.000f));
+    floor.Transform(glm::vec3(0.000f, 0.000f, -0.000f), glm::vec3(0.000f, 0.000f, -0.000f));
 
     Model display("assets/display.obj");
-    display.Move(glm::vec3(0.000f, 0.000f, 2.899f));
+    display.Transform(glm::vec3(0.000f, 0.000f, 2.899f), glm::vec3(0.000f, 0.000f, -0.000f));
 
     Model frame("assets/frame.obj");
-    frame.Move(glm::vec3(0.000f, 1.077f, 2.768f));
+    frame.Transform(glm::vec3(0.000f, 1.077f, 2.768f), glm::vec3(0.000f, 0.000f, -0.000f));
 
     Model painting("assets/painting.obj");
-    painting.Move(glm::vec3(-0.000f, 1.077f, 2.603f));
+    painting.Transform(glm::vec3(-0.000f, 1.077f, 2.603f), glm::vec3(0.000f, 0.000f, -0.000f));
+
+    Model frame_001("assets/frame.obj");
+    frame_001.Transform(glm::vec3(13.372f, 1.068f, -13.821f), glm::vec3(0.000f, 3.142f, -0.000f));
+
+    Model painting_001("assets/painting.obj");
+    painting_001.Transform(glm::vec3(13.372f, 1.068f, -13.656f), glm::vec3(0.000f, 3.142f, -0.000f));
+
+    Model frame_002("assets/frame.obj");
+    frame_002.Transform(glm::vec3(9.744f, 1.068f, -9.438f), glm::vec3(0.000f, 4.712f, -0.000f));
+
+    Model painting_002("assets/painting.obj");
+    painting_002.Transform(glm::vec3(9.909f, 1.068f, -9.438f), glm::vec3(0.000f, 4.712f, -0.000f));
+
+    Model frame_003("assets/frame.obj");
+    frame_003.Transform(glm::vec3(17.000f, 1.068f, -9.400f), glm::vec3(0.000f, 1.571f, -0.000f));
+
+    Model painting_003("assets/painting.obj");
+    painting_003.Transform(glm::vec3(16.835f, 1.068f, -9.400f), glm::vec3(0.000f, 1.571f, -0.000f));
+
+    Model painting_004("assets/painting.obj");
+    painting_004.Transform(glm::vec3(16.835f, 1.068f, -3.349f), glm::vec3(0.000f, 1.571f, -0.000f));
+
+    Model frame_004("assets/frame.obj");
+    frame_004.Transform(glm::vec3(17.000f, 1.068f, -3.349f), glm::vec3(0.000f, 1.571f, -0.000f));
+
+    Model painting_005("assets/painting.obj");
+    painting_005.Transform(glm::vec3(16.835f, 1.068f, 2.248f), glm::vec3(0.000f, 1.571f, -0.000f));
+
+    Model frame_005("assets/frame.obj");
+    frame_005.Transform(glm::vec3(17.000f, 1.068f, 2.248f), glm::vec3(0.000f, 1.571f, -0.000f));
+
+    Model painting_006("assets/painting.obj");
+    painting_006.Transform(glm::vec3(13.300f, 1.068f, 5.614f), glm::vec3(0.000f, 0.000f, -0.000f));
+
+    Model frame_006("assets/frame.obj");
+    frame_006.Transform(glm::vec3(13.300f, 1.068f, 5.779f), glm::vec3(0.000f, 0.000f, -0.000f));
+
+    Model torso("assets/torso.obj");
+    torso.Transform(glm::vec3(14.012f, 0.447f, -18.300f), glm::vec3(0.000f, 0.000f, -0.000f));
+
+    Model stand("assets/stand.obj");
+    stand.Transform(glm::vec3(14.034f, 0.000f, -18.300f), glm::vec3(0.000f, 0.000f, -0.000f));
+
+
 
 
 
@@ -136,12 +181,27 @@ int main() {
         // Wyrenderuj klatkê
         renderScene(texture, shaderProgram, Time, camera);
 
-		frame.Draw(shaderProgram);
+        // --- RYSOWANIE MODELI ---
         walls.Draw(shaderProgram);
         floor.Draw(shaderProgram);
-        painting.Draw(shaderProgram);
         display.Draw(shaderProgram);
-
+        frame.Draw(shaderProgram);
+        painting.Draw(shaderProgram);
+        frame_001.Draw(shaderProgram);
+        painting_001.Draw(shaderProgram);
+        frame_002.Draw(shaderProgram);
+        painting_002.Draw(shaderProgram);
+        frame_003.Draw(shaderProgram);
+        painting_003.Draw(shaderProgram);
+        painting_004.Draw(shaderProgram);
+        frame_004.Draw(shaderProgram);
+        painting_005.Draw(shaderProgram);
+        frame_005.Draw(shaderProgram);
+        painting_006.Draw(shaderProgram);
+        frame_006.Draw(shaderProgram);
+        torso.Draw(shaderProgram);
+        stand.Draw(shaderProgram);
+      
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

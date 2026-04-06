@@ -69,9 +69,14 @@ std::vector<Vertex> loadModel(const char* path) {
         vao.Unbind();
     }
 
-    void Model::Move(glm::vec3 translation) {
-		modelMatrix = glm::translate(modelMatrix, translation);
-	}
+    void Model::Transform(glm::vec3 translation, glm::vec3 rotation) {
+      
+        modelMatrix = glm::translate(modelMatrix, translation);
+
+        modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+        modelMatrix = glm::rotate(modelMatrix, rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+        modelMatrix = glm::rotate(modelMatrix, rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+    }
 
     void Model::Delete() {
         vao.Delete();

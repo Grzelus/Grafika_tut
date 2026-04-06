@@ -26,7 +26,7 @@ public:
 
     void Draw(Shader& shader);
 
-	void Move(glm::vec3 translation);
+    void Transform(glm::vec3 translation, glm::vec3 rotation);
 
     void Delete();
 };
