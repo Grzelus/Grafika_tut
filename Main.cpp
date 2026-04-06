@@ -157,6 +157,13 @@ int main() {
     Model stand("assets/stand.obj");
     stand.Transform(glm::vec3(14.034f, 0.000f, -18.300f), glm::vec3(0.000f, 0.000f, -0.000f));
 
+    Model fance("assets/fance.obj");
+    fance.Transform(glm::vec3(14.012f, 0.470f, -18.300f), glm::vec3(0.000f, 0.000f, -0.000f));
+
+    Model abstractfigure("assets/abstractfigure.obj");
+    abstractfigure.Transform(glm::vec3(-1.026f, 1.097f, -18.333f), glm::vec3(0.000f, 0.000f, -0.000f));
+
+
 
 
 
@@ -201,6 +208,8 @@ int main() {
         frame_006.Draw(shaderProgram);
         torso.Draw(shaderProgram);
         stand.Draw(shaderProgram);
+        fance.Draw(shaderProgram);
+		abstractfigure.Draw(shaderProgram);
       
         glfwSwapBuffers(window);
         glfwPollEvents();
