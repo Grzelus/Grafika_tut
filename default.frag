@@ -6,11 +6,15 @@ out vec4 FragColor;
 in vec3 Normal;
 in vec2 texCoord;
 
+uniform vec4 color;
+
 // Nasza tekstura (np. ziemia, ściany itp.) połączona z jednostką teksturującą
 uniform sampler2D tex0;
 
 void main()
 {
-    // Czytamy kolor z piksela tekstury
-    FragColor = texture(tex0, texCoord);
+    //do tekstruy
+    // FragColor = texture(tex0, texCoord);
+    // do koloru
+    FragColor = color;
 }
