@@ -96,7 +96,7 @@ int main() {
     floor.Transform(glm::vec3(0.000f, 0.000f, -0.000f), glm::vec3(0.000f, 0.000f, -0.000f));
 
     Model display("assets/display.obj");
-    display.Transform(glm::vec3(0.000f, 0.000f, 2.899f), glm::vec3(0.000f, 0.000f, -0.000f));
+    display.Transform(glm::vec3(0.000f, -0.054f, 2.899f), glm::vec3(0.000f, 0.000f, -0.000f));
 
     Model frame("assets/frame.obj");
     frame.Transform(glm::vec3(0.000f, 1.077f, 2.768f), glm::vec3(0.000f, 0.000f, -0.000f));
@@ -151,6 +151,8 @@ int main() {
 
     Model abstractfigure("assets/abstractfigure.obj");
     abstractfigure.Transform(glm::vec3(-1.026f, 1.097f, -18.333f), glm::vec3(0.000f, 0.000f, -0.000f));
+
+
 
 
 
@@ -226,6 +228,7 @@ int main() {
         glUniform4f(colorLocation, 1.0f, 0.41f, 0.71f, 1.0f);
 		abstractfigure.Draw(shaderProgram);
       
+  
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
