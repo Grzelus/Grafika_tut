@@ -185,8 +185,8 @@ static std::map<std::string, GLuint> LoadAllTextures() {
     textures.emplace("painting2", std::move(painting2Texture));
     GLuint painting3Texture = setupTexture("assets/textures/painting3.jpg");
     textures.emplace("painting3", std::move(painting3Texture));
-   // GLuint painting4Texture = setupTexture("assets/textures/painting4.jpg");
-   // textures.emplace("painting4", std::move(painting4Texture));
+   GLuint painting4Texture = setupTexture("assets/textures/painting4.jpg");
+    textures.emplace("painting4", std::move(painting4Texture));
     GLuint painting5Texture = setupTexture("assets/textures/painting5.jpg");
     textures.emplace("painting5", std::move(painting5Texture));
     GLuint painting6Texture = setupTexture("assets/textures/painting6.jpg");
@@ -220,14 +220,21 @@ void renderScene(Shader shaderProgram ,std::map<std::string, Model> models, std:
     models.at("frame_006").Draw(shaderProgram);
 
     //kazdy obraz inna tektura
-    glUniform1f(texScale, 1.0f);
+    glUniform1f(texScale, 2.0f);
+    glUniform2f(texShift, 0.5f, 0.0f);
     glBindTexture(GL_TEXTURE_2D, textures.at("painting1"));
     models.at("painting").Draw(shaderProgram);
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting2"));
     models.at("painting_001").Draw(shaderProgram);
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting3"));
     models.at("painting_002").Draw(shaderProgram);
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting4"));
     models.at("painting_003").Draw(shaderProgram);
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting5"));
     models.at("painting_004").Draw(shaderProgram);
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting6"));
     models.at("painting_005").Draw(shaderProgram);
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting7"));
     models.at("painting_006").Draw(shaderProgram);
 
     glBindTexture(GL_TEXTURE_2D, textures.at("dirt"));

@@ -17,7 +17,7 @@ uniform vec2 texShift=vec2(0.0f,0.0f);
 void main()
 {
     //do tekstruy
-    FragColor = texture(tex0, texCoord*texScale)*color ;
+    FragColor = texture(tex0, texCoord*texScale+texShift )*color ;
     // do koloru
    // FragColor = color;
 }
