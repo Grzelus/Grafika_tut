@@ -41,7 +41,6 @@ static std::map<std::string, Model> LoadAllModels() {
 
     Model display("assets/display.obj");
     display.Transform(glm::vec3(0.000f, 0.000f, 2.899f), glm::vec3(0.000f, 0.000f, -0.000f));
-    models.emplace("display", std::move(display));
 
     Model frame("assets/frame.obj");
     frame.Transform(glm::vec3(0.000f, 1.077f, 2.768f), glm::vec3(0.000f, 0.000f, -0.000f));
@@ -250,7 +249,7 @@ void renderScene(Shader shaderProgram ,std::map<std::string, Model> models, std:
 
 
 
-}
+    GLuint texture = setupTexture("assets/dirt.jpg");
 
 // --- MAIN ---
 int main() {
@@ -289,7 +288,54 @@ int main() {
         glActiveTexture(GL_TEXTURE0);
         glUniform4f(colorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
 
-		renderScene(shaderProgram,models, textures, texScale, texShift);  
+        //TEXTURY
+        
+        //glActiveTexture(GL_TEXTURE0);
+        //glBindTexture(GL_TEXTURE_2D, texture);
+        glClearColor(0.39f, 0.58f, 0.93f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        int colorLocation = glGetUniformLocation(shaderProgram.ID, "color");
+
+		
+
+        // --- RYSOWANIE MODELI ---
+        glUniform4f(colorLocation, 1.0f, 0.0f, 0.0f, 1.0f);
+        walls.Draw(shaderProgram);
+        display.Draw(shaderProgram);
+
+        glUniform4f(colorLocation, 0.0f, 1.0f, 0.0f, 1.0f);
+        floor.Draw(shaderProgram);
+
+        glUniform4f(colorLocation, 0.0f, 0.0f, 1.0f, 1.0f);
+        frame.Draw(shaderProgram);
+        frame_001.Draw(shaderProgram);
+        frame_002.Draw(shaderProgram);
+        frame_003.Draw(shaderProgram);
+        frame_004.Draw(shaderProgram);
+        frame_005.Draw(shaderProgram);
+        frame_006.Draw(shaderProgram);
+
+        //kazdy obraz inna tektura
+        glUniform4f(colorLocation, 1.0f, 0.84f, 0.0f, 1.0f);
+        painting.Draw(shaderProgram);
+        painting_001.Draw(shaderProgram);
+        painting_002.Draw(shaderProgram);
+        painting_003.Draw(shaderProgram);
+        painting_004.Draw(shaderProgram);
+        painting_005.Draw(shaderProgram);
+        painting_006.Draw(shaderProgram);
+      
+        glUniform4f(colorLocation, 0.0f, 1.0f, 1.0f, 1.0f);
+        torso.Draw(shaderProgram);
+        stand.Draw(shaderProgram);
+
+        glUniform4f(colorLocation, 1.0f, 0.0f, 1.0f, 1.0f);
+        fance.Draw(shaderProgram);
+
+        glUniform4f(colorLocation, 1.0f, 0.41f, 0.71f, 1.0f);
+		abstractfigure.Draw(shaderProgram);
+      
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
