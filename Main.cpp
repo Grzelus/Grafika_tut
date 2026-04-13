@@ -130,6 +130,40 @@ static std::map<std::string, Model> LoadAllModels() {
     models.emplace("kitty_dress", std::move(kitty_dress));
 
 
+    //LAMPY
+
+    Model shade_top("assets/shade_top.obj");
+    shade_top.Transform(glm::vec3(-0.000f, 2.030f, -0.401f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("shade_top", std::move(shade_top));
+
+    Model bulb("assets/bulb.obj");
+    bulb.Transform(glm::vec3(-0.000f, 2.030f, -0.401f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("bulb", std::move(bulb));
+
+    Model shade_top_001("assets/shade_top.obj");
+    shade_top_001.Transform(glm::vec3(-0.000f, 2.023f, -16.322f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("shade_top_001", std::move(shade_top_001));
+
+    Model bulb_001("assets/bulb.obj");
+    bulb_001.Transform(glm::vec3(-0.000f, 2.023f, -16.322f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("bulb_001", std::move(bulb_001));
+
+    Model shade_top_002("assets/shade_top.obj");
+    shade_top_002.Transform(glm::vec3(13.372f, 3.304f, -5.521f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("shade_top_002", std::move(shade_top_002));
+
+    Model bulb_002("assets/bulb.obj");
+    bulb_002.Transform(glm::vec3(13.372f, 3.304f, -5.521f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("bulb_002", std::move(bulb_002));
+
+    Model shade_top_003("assets/shade_top.obj");
+    shade_top_003.Transform(glm::vec3(13.372f, 3.304f, -0.615f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("shade_top_003", std::move(shade_top_003));
+
+    Model bulb_003("assets/bulb.obj");
+    bulb_003.Transform(glm::vec3(13.372f, 3.304f, -0.615f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("bulb_003", std::move(bulb_003));
+
 
     std::cout << "dziala koniec wczytywania modeli" << std::endl;
     return models;
@@ -308,6 +342,20 @@ void renderScene(Shader& shaderProgram, std::map<std::string, Model>& models, st
     models.at("kitty_head").Draw(shaderProgram);
     models.at("kitty_nose").Draw(shaderProgram);
     models.at("kitty_dress").Draw(shaderProgram);
+
+
+
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting6")); // TU TAK SAMO
+    models.at("shade_top").Draw(shaderProgram);
+    models.at("shade_top_001").Draw(shaderProgram);
+    models.at("shade_top_002").Draw(shaderProgram);
+    models.at("shade_top_003").Draw(shaderProgram);
+
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting5")); // I TU
+    models.at("bulb").Draw(shaderProgram);
+    models.at("bulb_001").Draw(shaderProgram);
+    models.at("bulb_002").Draw(shaderProgram);
+    models.at("bulb_003").Draw(shaderProgram);
 
 }
     // --- MAIN ---
