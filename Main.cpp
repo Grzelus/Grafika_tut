@@ -114,8 +114,26 @@ static std::map<std::string, Model> LoadAllModels() {
     Model abstractfigure("assets/abstractfigure.obj");
     abstractfigure.Transform(glm::vec3(-1.026f, 1.097f, -18.333f), glm::vec3(0.000f, 0.000f, -0.000f));
     models.emplace("abstractfigure", std::move(abstractfigure));
+
+    //tu jest rysowanie kotka
+
+    Model kitty_head("assets/kitty_head.obj");
+    kitty_head.Transform(glm::vec3(11.110f, 0.479f, -18.300f), glm::vec3(0.000f, 3.142f, -0.000f));
+    models.emplace("kitty_head", std::move(kitty_head));
+
+    Model kitty_nose("assets/kitty_nose.obj");
+    kitty_nose.Transform(glm::vec3(11.110f, 0.702f, -18.300f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("kitty_nose", std::move(kitty_nose));
+
+    Model kitty_dress("assets/kitty_dress.obj");
+    kitty_dress.Transform(glm::vec3(11.110f, 0.000f, -18.300f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("kitty_dress", std::move(kitty_dress));
+
+
+
     std::cout << "dziala koniec wczytywania modeli" << std::endl;
     return models;
+
 }
 
 
@@ -284,6 +302,12 @@ void renderScene(Shader& shaderProgram, std::map<std::string, Model>& models, st
     glBindTexture(GL_TEXTURE_2D, textures.at("metal"));
     models.at("fance").Draw(shaderProgram);
 	models.at("abstractfigure").Draw(shaderProgram);
+
+
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting7")); //zmien teksture dla kazdego elementu plus napisz mi czy chcesz oczy
+    models.at("kitty_head").Draw(shaderProgram);
+    models.at("kitty_nose").Draw(shaderProgram);
+    models.at("kitty_dress").Draw(shaderProgram);
 
 }
     // --- MAIN ---
