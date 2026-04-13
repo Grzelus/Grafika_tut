@@ -164,6 +164,10 @@ static std::map<std::string, Model> LoadAllModels() {
     bulb_003.Transform(glm::vec3(13.372f, 3.304f, -0.615f), glm::vec3(0.000f, 0.000f, -0.000f));
     models.emplace("bulb_003", std::move(bulb_003));
 
+    Model celling("assets/celling.obj");
+    celling.Transform(glm::vec3(0.000f, 0.000f, -0.000f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("celling", std::move(celling));
+
 
     std::cout << "dziala koniec wczytywania modeli" << std::endl;
     return models;
@@ -356,6 +360,9 @@ void renderScene(Shader& shaderProgram, std::map<std::string, Model>& models, st
     models.at("bulb_001").Draw(shaderProgram);
     models.at("bulb_002").Draw(shaderProgram);
     models.at("bulb_003").Draw(shaderProgram);
+
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting4")); // i tu <3
+    models.at("celling").Draw(shaderProgram);
 
 }
     // --- MAIN ---
