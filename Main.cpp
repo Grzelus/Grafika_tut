@@ -41,6 +41,7 @@ static std::map<std::string, Model> LoadAllModels() {
 
     Model display("assets/display.obj");
     display.Transform(glm::vec3(0.000f, 0.000f, 2.899f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("display", std::move(display));
 
     Model frame("assets/frame.obj");
     frame.Transform(glm::vec3(0.000f, 1.077f, 2.768f), glm::vec3(0.000f, 0.000f, -0.000f));
@@ -113,7 +114,7 @@ static std::map<std::string, Model> LoadAllModels() {
     Model abstractfigure("assets/abstractfigure.obj");
     abstractfigure.Transform(glm::vec3(-1.026f, 1.097f, -18.333f), glm::vec3(0.000f, 0.000f, -0.000f));
     models.emplace("abstractfigure", std::move(abstractfigure));
-
+    std::cout << "dziala koniec wczytywania modeli" << std::endl;
     return models;
 }
 
@@ -152,7 +153,10 @@ GLuint setupTexture(const char* path) {
     }
 
     GLint format = (numColCh == 4) ? GL_RGBA : GL_RGB;
+    
     glGenTextures(1, &texture);
+    if (texture == 0) std::cerr << "[setupTexture] glGenTextures returned 0 for " << path << std::endl;
+    
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -162,15 +166,38 @@ GLuint setupTexture(const char* path) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     glTexImage2D(GL_TEXTURE_2D, 0, format, wImg, hImg, 0, format, GL_UNSIGNED_BYTE, bytes);
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR) {
+        std::cerr << "[setupTexture] GL error after teximage for " << path
+            << ": 0x" << std::hex << err << std::dec << std::endl;
+    }
     glGenerateMipmap(GL_TEXTURE_2D);
+    err = glGetError();
+    if (err != GL_NO_ERROR) {
+        std::cerr << "[setupTexture] GL error after generateMipmap for " << path
+            << ": 0x" << std::hex << err << std::dec << std::endl;
+    }
 
     stbi_image_free(bytes);
     glBindTexture(GL_TEXTURE_2D, 0);
+    std::cerr << "[setupTexture] OK: " << path << " -> tex=" << texture << std::endl;
     return texture;
 }
 
+void texCheck(GLuint texture, const char* path) {
+    if (texture == 0) {
+        std::cerr << "Failed to load texture: " << path << std::endl;
+    } else {
+        std::cerr << "Successfully loaded texture: " << path << " with ID: " << texture << std::endl;
+    }
+}
+
+
 static std::map<std::string, GLuint> LoadAllTextures() {
     std::map<std::string, GLuint> textures;
+
+
+	std::cout << "dziala wczytywanie tekstur" << std::endl;
 
     GLuint dirtTexture = setupTexture("assets/textures/dirt.jpg");
     textures.emplace("dirt", std::move(dirtTexture));
@@ -184,7 +211,7 @@ static std::map<std::string, GLuint> LoadAllTextures() {
     textures.emplace("painting2", std::move(painting2Texture));
     GLuint painting3Texture = setupTexture("assets/textures/painting3.jpg");
     textures.emplace("painting3", std::move(painting3Texture));
-   GLuint painting4Texture = setupTexture("assets/textures/painting4.jpg");
+    GLuint painting4Texture = setupTexture("assets/textures/painting4.jpg");
     textures.emplace("painting4", std::move(painting4Texture));
     GLuint painting5Texture = setupTexture("assets/textures/painting5.jpg");
     textures.emplace("painting5", std::move(painting5Texture));
@@ -194,10 +221,18 @@ static std::map<std::string, GLuint> LoadAllTextures() {
     textures.emplace("painting7", std::move(painting7Texture));
 	GLuint frameTexture = setupTexture("assets/textures/frame2Texture.jpg"); 
 	textures.emplace("frame", std::move(frameTexture));
-	return textures;
+    GLuint metalTexture = setupTexture("assets/textures/metalTex.jpg");
+    textures.emplace("metal", std::move(metalTexture));
+	GLuint marmurTexture = setupTexture("assets/textures/marmurTex.jpg");
+	textures.emplace("marmur", std::move(marmurTexture));
+
+
+    std::cout << "dziala wczytywanie tekstur koniec" << std::endl;
+
+    return textures;
 }
 
-void renderScene(Shader shaderProgram ,std::map<std::string, Model> models, std::map<std::string, GLuint> textures, GLuint texScale, GLuint texShift) {
+void renderScene(Shader& shaderProgram, std::map<std::string, Model>& models, std::map<std::string, GLuint>& textures, GLuint texScale, GLuint texShift, GLuint texRotation) {
     glUniform1f(texScale, 20.0f);
     glBindTexture(GL_TEXTURE_2D, textures.at("wall"));
     models.at("walls").Draw(shaderProgram);
@@ -219,10 +254,16 @@ void renderScene(Shader shaderProgram ,std::map<std::string, Model> models, std:
     models.at("frame_006").Draw(shaderProgram);
 
     //kazdy obraz inna tektura
-    glUniform1f(texScale, 2.0f);
-    glUniform2f(texShift, 0.5f, 0.0f);
+	//painting1 - obraz na scianie z przodu
+    glUniform1f(texScale, 2.5f);
+    glUniform2f(texShift, 1.0f, -0.2f);
     glBindTexture(GL_TEXTURE_2D, textures.at("painting1"));
     models.at("painting").Draw(shaderProgram);
+
+	//pozostale obrazy - na scianie z prawej
+    glUniform1f(texRotation, -1.6f);
+	glUniform1f(texScale, 3.0f);
+	glUniform2f(texShift, 0.9f, 0.0f);
     glBindTexture(GL_TEXTURE_2D, textures.at("painting2"));
     models.at("painting_001").Draw(shaderProgram);
     glBindTexture(GL_TEXTURE_2D, textures.at("painting3"));
@@ -235,114 +276,66 @@ void renderScene(Shader shaderProgram ,std::map<std::string, Model> models, std:
     models.at("painting_005").Draw(shaderProgram);
     glBindTexture(GL_TEXTURE_2D, textures.at("painting7"));
     models.at("painting_006").Draw(shaderProgram);
-
-    glBindTexture(GL_TEXTURE_2D, textures.at("dirt"));
+    
+    glBindTexture(GL_TEXTURE_2D, textures.at("marmur"));
     models.at("torso").Draw(shaderProgram);
     models.at("stand").Draw(shaderProgram);
 
-    glBindTexture(GL_TEXTURE_2D, textures.at("floor"));
+    glBindTexture(GL_TEXTURE_2D, textures.at("metal"));
     models.at("fance").Draw(shaderProgram);
+	models.at("abstractfigure").Draw(shaderProgram);
 
-    glBindTexture(GL_TEXTURE_2D, textures.at("floor"));
+}
+    // --- MAIN ---
+    int main() {
+        GLFWwindow* window = setupWindow(800, 800, "YoutubeOpenGL");
+        if (!window) return -1;
 
-    models.at("abstractfigure").Draw(shaderProgram);
+        Shader shaderProgram("default.vert", "default.frag");
 
-
-
-    GLuint texture = setupTexture("assets/dirt.jpg");
-
-// --- MAIN ---
-int main() {
-    GLFWwindow* window = setupWindow(800, 800, "YoutubeOpenGL");
-    if (!window) return -1;
-
-    Shader shaderProgram("default.vert", "default.frag");
-
-    auto models = LoadAllModels();
-    auto textures = LoadAllTextures();
+        auto models = LoadAllModels();
+        auto textures = LoadAllTextures();
 
 
-    // Aktywacja shadera i przypisanie tekstury do samplera tex0
-    shaderProgram.Activate();
-    glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex0"), 0);
-
-	GLuint texScale = glGetUniformLocation(shaderProgram.ID, "texScale");
-    GLuint texShift = glGetUniformLocation(shaderProgram.ID, "texShift");
-    int colorLocation = glGetUniformLocation(shaderProgram.ID, "color");
-
-
-	glEnable(GL_DEPTH_TEST);
-    
-	Camera camera(width, height, glm::vec3(0.0f, 1.0f, 2.0f));
-    while (!glfwWindowShouldClose(window)) {
-        glClearColor(0.07f, 0.1f, 0.17f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // Aktywacja shadera i przypisanie tekstury do samplera tex0
         shaderProgram.Activate();
+        glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex0"), 0);
 
-        camera.Inputs(window);
-
-        float Time = glfwGetTime();
-        // Wyrenderuj klatkê
-        camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
-
-        glActiveTexture(GL_TEXTURE0);
-        glUniform4f(colorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
-
-        //TEXTURY
-        
-        //glActiveTexture(GL_TEXTURE0);
-        //glBindTexture(GL_TEXTURE_2D, texture);
-        glClearColor(0.39f, 0.58f, 0.93f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        GLuint texScale = glGetUniformLocation(shaderProgram.ID, "texScale");
+        GLuint texShift = glGetUniformLocation(shaderProgram.ID, "texShift");
+		GLuint texRotation = glGetUniformLocation(shaderProgram.ID, "texRotation");
         int colorLocation = glGetUniformLocation(shaderProgram.ID, "color");
 
-		
 
-        // --- RYSOWANIE MODELI ---
-        glUniform4f(colorLocation, 1.0f, 0.0f, 0.0f, 1.0f);
-        walls.Draw(shaderProgram);
-        display.Draw(shaderProgram);
+        glEnable(GL_DEPTH_TEST);
 
-        glUniform4f(colorLocation, 0.0f, 1.0f, 0.0f, 1.0f);
-        floor.Draw(shaderProgram);
+        Camera camera(width, height, glm::vec3(0.0f, 1.0f, 2.0f));
+        while (!glfwWindowShouldClose(window)) {
+            glClearColor(0.07f, 0.1f, 0.17f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            shaderProgram.Activate();
 
-        glUniform4f(colorLocation, 0.0f, 0.0f, 1.0f, 1.0f);
-        frame.Draw(shaderProgram);
-        frame_001.Draw(shaderProgram);
-        frame_002.Draw(shaderProgram);
-        frame_003.Draw(shaderProgram);
-        frame_004.Draw(shaderProgram);
-        frame_005.Draw(shaderProgram);
-        frame_006.Draw(shaderProgram);
+            glfwPollEvents();
+            camera.Inputs(window);
 
-        //kazdy obraz inna tektura
-        glUniform4f(colorLocation, 1.0f, 0.84f, 0.0f, 1.0f);
-        painting.Draw(shaderProgram);
-        painting_001.Draw(shaderProgram);
-        painting_002.Draw(shaderProgram);
-        painting_003.Draw(shaderProgram);
-        painting_004.Draw(shaderProgram);
-        painting_005.Draw(shaderProgram);
-        painting_006.Draw(shaderProgram);
-      
-        glUniform4f(colorLocation, 0.0f, 1.0f, 1.0f, 1.0f);
-        torso.Draw(shaderProgram);
-        stand.Draw(shaderProgram);
+            float Time = glfwGetTime();
+            // Wyrenderuj klatkê
+            camera.Matrix(45.0f, 0.1f, 100.0f, shaderProgram, "camMatrix");
 
-        glUniform4f(colorLocation, 1.0f, 0.0f, 1.0f, 1.0f);
-        fance.Draw(shaderProgram);
+            glActiveTexture(GL_TEXTURE0);
+            glUniform4f(colorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
+            glUniform1f(texRotation, 0.0f);
+            glUniform1f(texScale, 1.0f);
+            glUniform2f(texShift, 0.0f, 0.0f);
 
-        glUniform4f(colorLocation, 1.0f, 0.41f, 0.71f, 1.0f);
-		abstractfigure.Draw(shaderProgram);
-      
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+			renderScene(shaderProgram, models, textures, texScale, texShift, texRotation);
+            glfwSwapBuffers(window);
+            
+        }
+
+        // Sprz¹tanie
+        shaderProgram.Delete();
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return 0;
     }
-
-    // Sprz¹tanie
-    shaderProgram.Delete();
-    glfwDestroyWindow(window);
-    glfwTerminate();
-    return 0;
-}

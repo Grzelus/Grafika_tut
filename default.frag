@@ -12,12 +12,18 @@ uniform vec4 color;
 uniform sampler2D tex0;
 uniform float texScale=1.0f;
 uniform vec2 texShift=vec2(0.0f,0.0f);
-
+uniform float texRotation= 0.0f;
 
 void main()
 {
-    //do tekstruy
-    FragColor = texture(tex0, texCoord*texScale+texShift )*color ;
-    // do koloru
-   // FragColor = color;
+    float s = sin(texRotation);
+    float c = cos(texRotation);    
+    mat2 rotationMatrix = mat2(c, -s, s, c);//prepare rotation matrix
+
+    vec2 centeredTexCoord = texCoord - vec2(0.5f, 0.5f);//center the coords to rotate around the center of the texture
+    vec2 uv= rotationMatrix*texScale*centeredTexCoord;   //rotation and scaling
+    uv=uv+vec2(0.5f,0.5f)+texShift; // getting back to the original position and applying shift 
+
+    FragColor = texture(tex0,uv)*color ;
+
 }

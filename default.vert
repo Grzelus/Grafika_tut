@@ -18,9 +18,5 @@ void main()
     // Przepisujemy normalne i koordynaty UV, żeby poleciały dalej
     Normal = aNormal;
     texCoord = aTexCoord;
-    
-    // MATEMATYKA 3D:
-    // Najpierw mnożymy wierzchołek przez macierz modelu (żeby go przesunąć w świecie),
-    // a potem przez macierz kamery (żeby nakręcić na niego obiektyw i nałożyć perspektywę).
     gl_Position = camMatrix * model * vec4(aPos, 1.0f);
 }
