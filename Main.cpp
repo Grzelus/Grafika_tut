@@ -114,6 +114,12 @@ static std::map<std::string, Model> LoadAllModels() {
     Model abstractfigure("assets/abstractfigure.obj");
     abstractfigure.Transform(glm::vec3(-1.026f, 1.097f, -18.333f), glm::vec3(0.000f, 0.000f, -0.000f));
     models.emplace("abstractfigure", std::move(abstractfigure));
+
+
+    Model kitty("assets/Kitty.obj");
+    kitty.Transform(glm::vec3(-)
+
+
     std::cout << "dziala koniec wczytywania modeli" << std::endl;
     return models;
 }
@@ -225,7 +231,7 @@ static std::map<std::string, GLuint> LoadAllTextures() {
     textures.emplace("metal", std::move(metalTexture));
 	GLuint marmurTexture = setupTexture("assets/textures/marmurTex.jpg");
 	textures.emplace("marmur", std::move(marmurTexture));
-
+    
 
     std::cout << "dziala wczytywanie tekstur koniec" << std::endl;
 
@@ -292,6 +298,7 @@ void renderScene(Shader& shaderProgram, std::map<std::string, Model>& models, st
         if (!window) return -1;
 
         Shader shaderProgram("default.vert", "default.frag");
+        Shader shaderLight("light.vert", "light.vert");
 
         auto models = LoadAllModels();
         auto textures = LoadAllTextures();
