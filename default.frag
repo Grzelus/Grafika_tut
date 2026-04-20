@@ -17,7 +17,7 @@ uniform float texRotation= 0.0f;
 
 // lighting
 uniform vec4 lightColor;
-uniform vec3 lightPos;
+uniform vec3 lightPos[4];
 uniform vec3 cameraPos;
 
 void main()
@@ -34,11 +34,22 @@ void main()
 
     //lighting calculations
     float ambient = 0.20f; // ambient light factor
-    vec3 norm = Normal;
-    vec3 lightDirection =normalize(lightPos - currentPosition);
+    vec3 norm = normalize(Normal);
+    float diffuse=0.0f; // diffuse light factor
+    float specular=0.0f; // specular light factor
+    for (int i=0;i<4;i++)
+    {
+        vec3 lightDirection=normalize(lightPos[i] - currentPosition);
     
-    float diffuse = max(dot(norm, lightDirection), 0.0f); 
+        diffuse += max(dot(norm, lightDirection), 0.0f); 
 
+        float specularLight = 0.50f;
+	    vec3 viewDirection = normalize(cameraPos - currentPosition);
+	    vec3 reflectionDirection = reflect(-lightDirection, norm);
+	    float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
+    	specular += specAmount * specularLight;
+    }   
+    float lightIntensity = diffuse + ambient+specular;
+    FragColor = texture(tex0,uv)*lightColor*(lightIntensity);
 
-    FragColor = texture(tex0,uv)*lightColor*(diffuse+ambient);
 }

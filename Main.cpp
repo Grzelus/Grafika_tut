@@ -395,7 +395,9 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
         GLuint texShift = glGetUniformLocation(shaderProgram.ID, "texShift");
         GLuint texRotation = glGetUniformLocation(shaderProgram.ID, "texRotation");
         int colorLocation = glGetUniformLocation(shaderProgram.ID, "color");
-        glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), -0.000f, 2.030f, -0.401f);
+
+        static std::vector<glm::vec3> lightPositions = GetBulbPositions();
+        glUniform3fv(glGetUniformLocation(shaderProgram.ID, "lightPos"), 4, glm::value_ptr(lightPositions[0]));
         GLuint camPos = glGetUniformLocation(shaderProgram.ID, "cameraPos");
 		GLuint lightColorP = glGetUniformLocation(shaderProgram.ID, "lightColor");
 
