@@ -20,6 +20,39 @@ uniform vec4 lightColor;
 uniform vec3 lightPos[4];
 uniform vec3 cameraPos;
 
+
+
+float pointLight() {
+    const float linear = 0.1f;
+    const float quadratic = 0.012f;
+    const float ambient = 0.35f;
+
+    vec3 norm = normalize(Normal);
+    float diffuse=0.0f; // diffuse light factor
+    float totalspecular=0.0f; // specular light factor
+    for (int i=0;i<4;i++)
+    {
+        vec3 lightVector = lightPos[i] - currentPosition;
+        float distance = length(lightVector);
+        float intesityOfLight = 1.0f / (1.0f + linear * distance + quadratic * (distance * distance)); 
+
+        vec3 lightDirection=normalize(lightVector);
+    
+        diffuse += max(dot(norm, lightDirection), 0.0f)*intesityOfLight; 
+
+        float specularLight = 0.50f;
+	    vec3 viewDirection = normalize(cameraPos - currentPosition);
+	    vec3 reflectionDirection = reflect(-lightDirection, norm);
+	    float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
+
+    	totalspecular += specAmount * specularLight*intesityOfLight;
+    }   
+    float light = diffuse + ambient+totalspecular;
+    return light;
+
+}
+
+
 void main()
 {
     //rotation of the texture
@@ -33,23 +66,7 @@ void main()
 
 
     //lighting calculations
-    float ambient = 0.20f; // ambient light factor
-    vec3 norm = normalize(Normal);
-    float diffuse=0.0f; // diffuse light factor
-    float specular=0.0f; // specular light factor
-    for (int i=0;i<4;i++)
-    {
-        vec3 lightDirection=normalize(lightPos[i] - currentPosition);
     
-        diffuse += max(dot(norm, lightDirection), 0.0f); 
-
-        float specularLight = 0.50f;
-	    vec3 viewDirection = normalize(cameraPos - currentPosition);
-	    vec3 reflectionDirection = reflect(-lightDirection, norm);
-	    float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
-    	specular += specAmount * specularLight;
-    }   
-    float lightIntensity = diffuse + ambient+specular;
-    FragColor = texture(tex0,uv)*lightColor*(lightIntensity);
+    FragColor = texture(tex0,uv)*lightColor*pointLight();
 
 }

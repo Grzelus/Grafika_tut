@@ -216,6 +216,10 @@ static std::map<std::string, GLuint> LoadAllTextures() {
     textures.emplace("blackTexture", std::move(blackTexture));
 	GLuint frameTexture2 = setupTexture("assets/textures/woodenFrameTex.jpg");
     textures.emplace("frame2", std::move(frameTexture2));
+    GLuint greyStoneTexture = setupTexture("assets/textures/greyStoneTex.png");
+    textures.emplace("greyStone", std::move(greyStoneTexture));
+    GLuint catFurTexture = setupTexture("assets/textures/catFurTex.jpg");
+	textures.emplace("catFur", std::move(catFurTexture));
     std::cout << "dziala wczytywanie tekstur koniec" << std::endl;
 
     return textures;
@@ -347,16 +351,20 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
     
     glBindTexture(GL_TEXTURE_2D, textures.at("white"));
     models.at("torso").Draw(shaderProgram);
+	glBindTexture(GL_TEXTURE_2D, textures.at("greyStone"));
     models.at("stand").Draw(shaderProgram);
 
     glBindTexture(GL_TEXTURE_2D, textures.at("metal"));
     models.at("fance").Draw(shaderProgram);
 	models.at("abstractfigure").Draw(shaderProgram);
 
-    glBindTexture(GL_TEXTURE_2D, textures.at("painting7")); //zmien teksture dla kazdego elementu plus napisz mi czy chcesz oczy
+    glBindTexture(GL_TEXTURE_2D, textures.at("catFur")); 
     models.at("kitty_head").Draw(shaderProgram);
-    models.at("kitty_nose").Draw(shaderProgram);
     models.at("kitty_dress").Draw(shaderProgram);
+
+	glBindTexture(GL_TEXTURE_2D, textures.at("blackTexture")); 
+    models.at("kitty_nose").Draw(shaderProgram);
+
 
     glBindTexture(GL_TEXTURE_2D, textures.at("metal")); // TU TAK SAMO
     models.at("shade_top").Draw(shaderProgram);
@@ -435,7 +443,7 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
             glUniform1f(texRotation, 0.0f);
             glUniform1f(texScale, 1.0f);
             glUniform2f(texShift, 0.0f, 0.0f);
-            glUniform4f(lightColorP, 1.0f, 1.0f, 1.0f, 1.0f);
+            glUniform4f(lightColorP, 1.0f, 0.9f, 0.9f, 1.0f);
 
 			shaderLight.Activate();
             camera.Matrix(shaderLight, "camMatrix");
