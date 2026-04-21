@@ -134,9 +134,6 @@ static std::map<std::string, Model> LoadAllModels() {
     kitty_head.Transform(glm::vec3(11.110f, 0.479f, -18.300f), glm::vec3(0.000f, 3.142f, -0.000f));
     models.emplace("kitty_head", std::move(kitty_head));
 
-    Model kitty_nose("assets/kitty_nose.obj");
-    kitty_nose.Transform(glm::vec3(11.110f, 0.702f, -18.300f), glm::vec3(0.000f, 0.000f, -0.000f));
-    models.emplace("kitty_nose", std::move(kitty_nose));
 
     Model kitty_dress("assets/kitty_dress.obj");
     kitty_dress.Transform(glm::vec3(11.110f, 0.000f, -18.300f), glm::vec3(0.000f, 0.000f, -0.000f));
@@ -218,8 +215,8 @@ static std::map<std::string, GLuint> LoadAllTextures() {
     textures.emplace("frame2", std::move(frameTexture2));
     GLuint greyStoneTexture = setupTexture("assets/textures/greyStoneTex.png");
     textures.emplace("greyStone", std::move(greyStoneTexture));
-    GLuint catFurTexture = setupTexture("assets/textures/catFurTex.jpg");
-	textures.emplace("catFur", std::move(catFurTexture));
+    GLuint catFurTexture = setupTexture("assets/textures/kitty.jpg");
+	textures.emplace("kitty", std::move(catFurTexture));
 	GLuint specularTexture = setupTexture("assets/textures/floorTex2_specular.jpg");
     textures.emplace("specularFloor", std::move(specularTexture));
     std::cout << "dziala wczytywanie tekstur koniec" << std::endl;
@@ -271,8 +268,10 @@ GLuint setupTexture(const char* path) {
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     glTexImage2D(GL_TEXTURE_2D, 0, format, wImg, hImg, 0, format, GL_UNSIGNED_BYTE, bytes);
     GLenum err = glGetError();
@@ -367,12 +366,13 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
     models.at("fance").Draw(shaderProgram);
 	models.at("abstractfigure").Draw(shaderProgram);
 
-    glBindTexture(GL_TEXTURE_2D, textures.at("catFur")); 
+    glUniform1f(texScale, 1.0f);         
+    glUniform1f(texRotation, 0.0f);      
+    glUniform2f(texShift, 0.0f, 0.0f);   
+
+    glBindTexture(GL_TEXTURE_2D, textures.at("kitty")); 
     models.at("kitty_head").Draw(shaderProgram);
     models.at("kitty_dress").Draw(shaderProgram);
-
-	glBindTexture(GL_TEXTURE_2D, textures.at("blackTexture")); 
-    models.at("kitty_nose").Draw(shaderProgram);
 
 
     glBindTexture(GL_TEXTURE_2D, textures.at("metal"));
