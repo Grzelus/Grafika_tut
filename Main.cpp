@@ -220,6 +220,8 @@ static std::map<std::string, GLuint> LoadAllTextures() {
     textures.emplace("greyStone", std::move(greyStoneTexture));
     GLuint catFurTexture = setupTexture("assets/textures/catFurTex.jpg");
 	textures.emplace("catFur", std::move(catFurTexture));
+	GLuint specularTexture = setupTexture("assets/textures/floorTex2_specular.jpg");
+    textures.emplace("specularFloor", std::move(specularTexture));
     std::cout << "dziala wczytywanie tekstur koniec" << std::endl;
 
     return textures;
@@ -301,7 +303,7 @@ void texCheck(GLuint texture, const char* path) {
 
 
 
-void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::map<std::string, Model>& models, std::map<std::string, GLuint>& textures, GLuint texScale, GLuint texShift, GLuint texRotation) 
+void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::map<std::string, Model>& models, std::map<std::string, GLuint>& textures, GLuint texScale, GLuint texShift, GLuint texRotation, GLuint useSpecularMap) 
 {
 	shaderProgram.Activate();
     
@@ -312,10 +314,17 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
 
     glUniform1f(texScale, 20.0f);
     glBindTexture(GL_TEXTURE_2D, textures.at("floor"));
+	
+    glActiveTexture(GL_TEXTURE1);
+    glUniform1i(useSpecularMap, 1);
+
+	glBindTexture(GL_TEXTURE_2D, textures.at("specularFloor"));
     models.at("floor").Draw(shaderProgram);
+    
+    glUniform1i(useSpecularMap, 0);
+	glActiveTexture(GL_TEXTURE0);
 
-
-    glUniform1f(texScale, 25.0f);
+    glUniform1f(texScale, 2.0f);
     glBindTexture(GL_TEXTURE_2D, textures.at("frame2"));
     models.at("frame").Draw(shaderProgram);
     models.at("frame_001").Draw(shaderProgram);
@@ -366,13 +375,13 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
     models.at("kitty_nose").Draw(shaderProgram);
 
 
-    glBindTexture(GL_TEXTURE_2D, textures.at("metal")); // TU TAK SAMO
+    glBindTexture(GL_TEXTURE_2D, textures.at("metal"));
     models.at("shade_top").Draw(shaderProgram);
     models.at("shade_top_001").Draw(shaderProgram);
     models.at("shade_top_002").Draw(shaderProgram);
     models.at("shade_top_003").Draw(shaderProgram);
 
-    glBindTexture(GL_TEXTURE_2D, textures.at("white")); // i tu <3
+    glBindTexture(GL_TEXTURE_2D, textures.at("white"));
     models.at("celling").Draw(shaderProgram);
 
     shaderLight.Activate();
@@ -385,7 +394,7 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
 }
     // --- MAIN ---
     int main() {
-        GLFWwindow* window = setupWindow(800, 800, "YoutubeOpenGL");
+        GLFWwindow* window = setupWindow(800, 800, "Art Galery");
         if (!window) return -1;
 
         Shader shaderProgram("default.vert", "default.frag");
@@ -399,6 +408,8 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
         shaderProgram.compileErrors(shaderProgram.ID,"PROGRAM");
 
         glUniform1i(glGetUniformLocation(shaderProgram.ID, "tex0"), 0);
+        glUniform1i(glGetUniformLocation(shaderProgram.ID, "SpecularMap"), 1);
+        GLuint useSpecularMap = glGetUniformLocation(shaderProgram.ID, "useSpecularMap");
         GLuint texScale = glGetUniformLocation(shaderProgram.ID, "texScale");
         GLuint texShift = glGetUniformLocation(shaderProgram.ID, "texShift");
         GLuint texRotation = glGetUniformLocation(shaderProgram.ID, "texRotation");
@@ -443,13 +454,14 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
             glUniform1f(texRotation, 0.0f);
             glUniform1f(texScale, 1.0f);
             glUniform2f(texShift, 0.0f, 0.0f);
+            glUniform1i(useSpecularMap, 0);
             glUniform4f(lightColorP, 1.0f, 0.9f, 0.9f, 1.0f);
-
+          
 			shaderLight.Activate();
             camera.Matrix(shaderLight, "camMatrix");
             glUniform4f(lightColorL, 1.0f, 1.0f, 1.0f, 1.0f);
 
-			renderScene(shaderProgram, shaderLight, camera ,models, textures, texScale, texShift, texRotation);
+			renderScene(shaderProgram, shaderLight, camera ,models, textures, texScale, texShift, texRotation, useSpecularMap);
             glfwSwapBuffers(window);
             
         }

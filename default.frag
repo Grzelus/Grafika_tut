@@ -11,9 +11,12 @@ uniform vec4 color;
 
 // textures
 uniform sampler2D tex0;
+uniform sampler2D specularMap;
 uniform float texScale=1.0f;
 uniform vec2 texShift=vec2(0.0f,0.0f);
 uniform float texRotation= 0.0f;
+uniform bool useSpecularMap=false;
+
 
 // lighting
 uniform vec4 lightColor;
@@ -25,7 +28,7 @@ uniform vec3 cameraPos;
 float pointLight() {
     const float linear = 0.1f;
     const float quadratic = 0.012f;
-    const float ambient = 0.35f;
+    const float ambient = 0.30f;
 
     vec3 norm = normalize(Normal);
     float diffuse=0.0f; // diffuse light factor
@@ -43,10 +46,11 @@ float pointLight() {
         float specularLight = 0.50f;
 	    vec3 viewDirection = normalize(cameraPos - currentPosition);
 	    vec3 reflectionDirection = reflect(-lightDirection, norm);
-	    float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 8);
+	    float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f), 32);
 
     	totalspecular += specAmount * specularLight*intesityOfLight;
-    }   
+    }  
+    if(useSpecularMap){totalspecular *= texture(specularMap, texCoord).r;}
     float light = diffuse + ambient+totalspecular;
     return light;
 
