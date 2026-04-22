@@ -140,6 +140,18 @@ static std::map<std::string, Model> LoadAllModels() {
     models.emplace("kitty_dress", std::move(kitty_dress));
 
 
+
+    //nowy kotek
+
+    Model head("assets/kitty_head.obj");
+    head.Transform(glm::vec3(-0.255f, 0.479f, -2.754f), glm::vec3(0.000f, 4.712f, -0.000f));
+    models.emplace("head", std::move(head));
+
+    Model dress("assets/kitty_dress.obj");
+    dress.Transform(glm::vec3(-0.255f, 0.000f, -2.754f), glm::vec3(0.000f, 0.000f, -0.000f));
+    models.emplace("dress", std::move(dress));
+
+
     //LAMPY
     //KLOSZE
     
@@ -302,7 +314,7 @@ void texCheck(GLuint texture, const char* path) {
 
 
 
-void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::map<std::string, Model>& models, std::map<std::string, GLuint>& textures, GLuint texScale, GLuint texShift, GLuint texRotation, GLuint useSpecularMap, glm::vec3 kittyPos) 
+void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std::map<std::string, Model>& models, std::map<std::string, GLuint>& textures, GLuint texScale, GLuint texShift, GLuint texRotation, GLuint useSpecularMap, glm::vec3 kittyPos, glm::vec3 kittyPos2)
 {
 	shaderProgram.Activate();
     
@@ -370,6 +382,8 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
     glUniform1f(texRotation, 0.0f);      
     glUniform2f(texShift, 0.0f, 0.0f);   
 
+
+
     glm::vec3 kittyRotation = glm::vec3(0.0f, 3.142f, 0.0f); // Twoja bazowa rotacja
 
     models.at("kitty_head").Transform(kittyPos + glm::vec3(0.0f, 0.479f, 0.0f), kittyRotation);
@@ -379,6 +393,18 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
     glBindTexture(GL_TEXTURE_2D, textures.at("kitty")); 
     models.at("kitty_head").Draw(shaderProgram);
     models.at("kitty_dress").Draw(shaderProgram);
+
+
+    //nowy kotek
+
+    glm::vec3 kittyRotation2 = glm::vec3(0.0f, 4.712f, 0.0f); // Bazowa rotacja drugiego kota
+
+    models.at("head").Transform(kittyPos2 + glm::vec3(0.0f, 0.479f, 0.0f), kittyRotation2);
+    models.at("dress").Transform(kittyPos2, kittyRotation2);
+
+    glBindTexture(GL_TEXTURE_2D, textures.at("kitty"));
+    models.at("head").Draw(shaderProgram);
+    models.at("dress").Draw(shaderProgram);
 
 
     glBindTexture(GL_TEXTURE_2D, textures.at("metal"));
@@ -448,12 +474,22 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
             glm::vec3(13.61f, 0.0f, -10.5f)
         };
 
+        std::vector<glm::vec3> kittyPath2 = {
+            glm::vec3(-0.255f, 0.0f, -14.011f),
+            glm::vec3(-0.255f, 0.0f, -2.754f)
+        };
+
         int currentTargetIdx = 0;
         float kittySpeed = 2.0f; 
         float waitTime = 1.0f;  
         float timer = 0.0f;
         bool isWaiting = false;
         glm::vec3 kittyPos = kittyPath[0];
+
+        int currentTargetIdx2 = 0;
+        float timer2 = 0.0f;
+        bool isWaiting2 = false;
+        glm::vec3 kittyPos2 = kittyPath2[0];
 
 
 
@@ -516,10 +552,31 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight,Camera& camera,std::
                 }
             }
 
+            if (isWaiting2) {
+                timer2 += deltaTime;
+                if (timer2 >= waitTime) {
+                    isWaiting2 = false;
+                    timer2 = 0.0f;
+                    currentTargetIdx2 = (currentTargetIdx2 + 1) % kittyPath2.size();
+                }
+            }
+            else {
+                glm::vec3 target2 = kittyPath2[currentTargetIdx2];
+                float dist2 = glm::distance(kittyPos2, target2);
+
+                if (dist2 < deltaTime * kittySpeed) {
+                    kittyPos2 = target2;
+                    isWaiting2 = true;
+                }
+                else {
+                    glm::vec3 direction2 = glm::normalize(target2 - kittyPos2);
+                    kittyPos2 += direction2 * kittySpeed * deltaTime;
+                }
+            }
 
 
 
-			renderScene(shaderProgram, shaderLight, camera ,models, textures, texScale, texShift, texRotation, useSpecularMap, kittyPos);
+            renderScene(shaderProgram, shaderLight, camera, models, textures, texScale, texShift, texRotation, useSpecularMap, kittyPos, kittyPos2);
             glfwSwapBuffers(window);
             
         }

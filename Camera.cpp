@@ -41,19 +41,19 @@ void Camera::Inputs(GLFWwindow* window)
 
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
-		Position += speed * walkingDirection;
+		Position += 70 * speed * walkingDirection;
 	}
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 	{
-		Position += speed * -glm::normalize(glm::cross(walkingDirection, Up));
+		Position += 70 * speed * -glm::normalize(glm::cross(walkingDirection, Up));
 	}
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 	{
-		Position += speed * -walkingDirection;
+		Position += 70 * speed * -walkingDirection;
 	}
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 	{
-		Position += speed * glm::normalize(glm::cross(walkingDirection, Up));
+		Position += 70 * speed * glm::normalize(glm::cross(walkingDirection, Up));
 	}
 
 
