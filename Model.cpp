@@ -71,6 +71,7 @@ std::vector<Vertex> loadModel(const char* path) {
 
     void Model::Transform(glm::vec3 translation, glm::vec3 rotation) {
       
+		modelMatrix = glm::mat4(1.0f);
         modelMatrix = glm::translate(modelMatrix, translation);
 
         modelMatrix = glm::rotate(modelMatrix, rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
