@@ -9,16 +9,21 @@ layout (location = 2) in vec2 aTexCoord;
 out vec3 Normal;
 out vec2 texCoord;
 out vec3 currentPosition;
+out mat2 rotationMatrix;
 
-
+uniform float texRotation; // rotation of texture
 uniform mat4 camMatrix; // data from camera perspective + view
 uniform mat4 model;    // from model class rotation, position scale
 
 void main()
 {
-    currentPosition = vec3(model*vec4(aPos,1.0f));  //
+    float s = sin(texRotation);
+    float c = cos(texRotation);    
+    rotationMatrix = mat2(c, -s, s, c);
 
-    Normal = normalize(mat3(model) * aNormal); //making normal responsive for rotations and scaling
+    currentPosition = vec3(model*vec4(aPos,1.0f));  
+
+    Normal = normalize(mat3(model) * aNormal); 
     texCoord = aTexCoord; 
-    gl_Position = camMatrix * vec4(currentPosition, 1.0f); //
+    gl_Position = camMatrix * vec4(currentPosition, 1.0f);
 }

@@ -57,8 +57,17 @@ struct Kitty {
     }
 };
 
+struct Material {
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+    float shininess;
+};
 
-
+struct TextureData {
+    GLuint id;
+    Material mat;
+};
 
 
 
@@ -66,13 +75,14 @@ struct Kitty {
 const float width = 800.0f;
 const float height = 800.0f;
 
+//headers of functions
 GLFWwindow* setupWindow(int w, int h, const char* title);
 GLuint setupTexture(const char* path);
 void texCheck(GLuint texture, const char* path);
-void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std::map<std::string, Model>& models, std::map<std::string, GLuint>& textures, GLuint texScale, GLuint texShift, GLuint texRotation, GLuint useSpecularMap, glm::vec3 kittyPos, glm::vec3 kittyPos2);
+void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std::map<std::string, Model>& models, std::map<std::string, TextureData>& textures, GLuint texScale, GLuint texShift, GLuint texRotation, GLuint useSpecularMap, glm::vec3 kittyPos, glm::vec3 kittyPos2);
 
 // --- FUNKCJE POMOCNICZE ---
-// Zwraca pozycje ¿arówek w galerii
+
 static std::vector<glm::vec3> GetBulbPositions() {
     return {
         glm::vec3(-0.000f, 2.030f, -0.401f),  // bulb
@@ -221,48 +231,99 @@ static std::map<std::string, Model> LoadAllModels() {
 
 }
 
-static std::map<std::string, GLuint> LoadAllTextures() {
-    std::map<std::string, GLuint> textures;
+static std::map<std::string, Material> LoadAllMaterials() {
+    std::map<std::string, Material> materials;
 
+    // Drewno - matowe, niskie odbicie œwiat³a
+    materials["wood"] = {
+        glm::vec3(0.2f, 0.15f, 0.1f),   // ambient
+        glm::vec3(0.6f, 0.4f, 0.2f),    // diffuse
+        glm::vec3(0.1f, 0.1f, 0.1f),    // specular
+        16.0f                           // shininess
+    };
+
+    // Metal - wysokie odbicie (specular) i po³ysk
+    materials["metal"] = {
+        glm::vec3(0.25f, 0.25f, 0.25f),
+        glm::vec3(0.4f, 0.4f, 0.4f),
+        glm::vec3(0.77f, 0.77f, 0.77f),
+        76.8f
+    };
+
+    // Œciana - bardzo matowa, równe i jasne rozproszenie
+    materials["wall"] = {
+        glm::vec3(0.1f, 0.1f, 0.1f),
+        glm::vec3(0.8f, 0.8f, 0.8f),
+        glm::vec3(0.05f, 0.05f, 0.05f),
+        8.0f
+    };
+
+    // Kamieñ - poch³ania du¿o œwiat³a, lekko matowy
+    materials["stone"] = {
+        glm::vec3(0.1f, 0.1f, 0.1f),
+        glm::vec3(0.5f, 0.5f, 0.5f),
+        glm::vec3(0.1f, 0.1f, 0.1f),
+        10.0f
+    };
+
+    // P³ótno (canvas) - bardzo niska b³yszcz¹coœæ, dobrze rozprasza œwiat³o
+    materials["canvas"] = {
+        glm::vec3(0.1f, 0.1f, 0.1f),
+        glm::vec3(0.7f, 0.7f, 0.7f),
+        glm::vec3(0.01f, 0.01f, 0.01f),
+        2.0f
+    };
+    
+    // Plastik - uniwersalny materia³ z umiarkowanym odbiciem
+    materials["plastic"] = {
+        glm::vec3(0.1f, 0.1f, 0.1f),
+        glm::vec3(0.5f, 0.5f, 0.5f),
+        glm::vec3(0.5f, 0.5f, 0.5f),
+        32.0f
+    };
+    
+    // Domyœlny materia³ zapasowy
+    materials["default"] = {
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        glm::vec3(1.0f, 1.0f, 1.0f),
+        glm::vec3(0.5f, 0.5f, 0.5f),
+        32.0f
+    };
+
+    return materials;
+}
+
+static std::map<std::string, TextureData> LoadAllTextures() {
+    std::map<std::string, TextureData> textures;
+    auto materials = LoadAllMaterials(); // Pobranie zdefiniowanych materia³ów
 
     std::cout << "dziala wczytywanie tekstur" << std::endl;
 
-    GLuint dirtTexture = setupTexture("assets/textures/dirt.jpg");
-    textures.emplace("dirt",dirtTexture);
-    GLuint wallTexture = setupTexture("assets/textures/wallTex2.jpg");
-    textures.emplace("wall", wallTexture);
-    GLuint floorTexture = setupTexture("assets/textures/floorTex2.jpg");
-    textures.emplace("floor", floorTexture);
-    GLuint painting1Texture = setupTexture("assets/textures/painting1.jpg");
-    textures.emplace("painting1", painting1Texture);
-    GLuint painting2Texture = setupTexture("assets/textures/painting2.jpg");
-    textures.emplace("painting2", std::move(painting2Texture));
-    GLuint painting3Texture = setupTexture("assets/textures/painting3.jpg");
-    textures.emplace("painting3", std::move(painting3Texture));
-    GLuint painting4Texture = setupTexture("assets/textures/painting4.jpg");
-    textures.emplace("painting4", std::move(painting4Texture));
-    GLuint painting5Texture = setupTexture("assets/textures/painting5.jpg");
-    textures.emplace("painting5", std::move(painting5Texture));
-    GLuint painting6Texture = setupTexture("assets/textures/painting6.jpg");
-    textures.emplace("painting6", std::move(painting6Texture));
-    GLuint painting7Texture = setupTexture("assets/textures/painting7.jpg");
-    textures.emplace("painting7", std::move(painting7Texture));
-    GLuint frameTexture = setupTexture("assets/textures/frame2Texture.jpg");
-    textures.emplace("frame", std::move(frameTexture));
-    GLuint metalTexture = setupTexture("assets/textures/metalTex2.jpg");
-    textures.emplace("metal", std::move(metalTexture));
-    GLuint white = setupTexture("assets/textures/whiteTex.jpg");
-    textures.emplace("white", std::move(white));
-    GLuint blackTexture = setupTexture("assets/textures/blackTex.jpg");//tesktura do zmiany 
-    textures.emplace("blackTexture", std::move(blackTexture));
-	GLuint frameTexture2 = setupTexture("assets/textures/woodenFrameTex.jpg");
-    textures.emplace("frame2", std::move(frameTexture2));
-    GLuint greyStoneTexture = setupTexture("assets/textures/greyStoneTex.png");
-    textures.emplace("greyStone", std::move(greyStoneTexture));
-    GLuint catFurTexture = setupTexture("assets/textures/kitty.jpg");
-	textures.emplace("kitty", std::move(catFurTexture));
-	GLuint specularTexture = setupTexture("assets/textures/floorTex2_specular.png");
-    textures.emplace("specularFloor", std::move(specularTexture));
+    textures.emplace("dirt", TextureData{ setupTexture("assets/textures/dirt.jpg"), materials["stone"] });
+    textures.emplace("wall", TextureData{ setupTexture("assets/textures/wallTex2.jpg"), materials["wall"] });
+    textures.emplace("floor", TextureData{ setupTexture("assets/textures/floorTex2.jpg"), materials["wood"] });
+    
+    // Obrazy (P³ótno)
+    textures.emplace("painting1", TextureData{ setupTexture("assets/textures/painting1.jpg"), materials["canvas"] });
+    textures.emplace("painting2", TextureData{ setupTexture("assets/textures/painting2.jpg"), materials["canvas"] });
+    textures.emplace("painting3", TextureData{ setupTexture("assets/textures/painting3.jpg"), materials["canvas"] });
+    textures.emplace("painting4", TextureData{ setupTexture("assets/textures/painting4.jpg"), materials["canvas"] });
+    textures.emplace("painting5", TextureData{ setupTexture("assets/textures/painting5.jpg"), materials["canvas"] });
+    textures.emplace("painting6", TextureData{ setupTexture("assets/textures/painting6.jpg"), materials["canvas"] });
+    textures.emplace("painting7", TextureData{ setupTexture("assets/textures/painting7.jpg"), materials["canvas"] });
+    
+    // Ramy
+    textures.emplace("frame", TextureData{ setupTexture("assets/textures/frame2Texture.jpg"), materials["wood"] });
+    textures.emplace("frame2", TextureData{ setupTexture("assets/textures/woodenFrameTex.jpg"), materials["wood"] });
+    
+    // Ró¿ne
+    textures.emplace("metal", TextureData{ setupTexture("assets/textures/metalTex2.jpg"), materials["metal"] });
+    textures.emplace("white", TextureData{ setupTexture("assets/textures/whiteTex.jpg"), materials["plastic"] });
+    textures.emplace("blackTexture", TextureData{ setupTexture("assets/textures/blackTex.jpg"), materials["plastic"] });
+    textures.emplace("greyStone", TextureData{ setupTexture("assets/textures/greyStoneTex.png"), materials["stone"] });
+    textures.emplace("kitty", TextureData{ setupTexture("assets/textures/kitty.jpg"), materials["canvas"] }); // Przyk³adowo canvas dla zmatowienia
+    textures.emplace("specularFloor", TextureData{ setupTexture("assets/textures/floorTex2_specular.png"), materials["wood"] });
+
     std::cout << "dziala wczytywanie tekstur koniec" << std::endl;
 
     return textures;
@@ -345,30 +406,45 @@ void texCheck(GLuint texture, const char* path) {
 }
 
 
-void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std::map<std::string, Model>& models, std::map<std::string, GLuint>& textures, GLuint texScale, GLuint texShift, GLuint texRotation, GLuint useSpecularMap, glm::vec3 kittyPos, glm::vec3 kittyPos2)
+void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std::map<std::string, Model>& models, std::map<std::string, 
+    TextureData>& textures, GLuint texScale, GLuint texShift, GLuint texRotation, 
+    GLuint useSpecularMap, glm::vec3 kittyPos, glm::vec3 kittyPos2,
+    GLuint materialAmbient, GLuint materialDiffuse, GLuint materialSpecular, GLuint materialShininess)
 
 {
 	shaderProgram.Activate();
     
     glUniform1f(texScale, 20.0f);
-    glBindTexture(GL_TEXTURE_2D, textures.at("wall"));
+    glUniform3fv(materialAmbient, 1, value_ptr(textures.at("wall").mat.ambient));
+    glUniform3fv(materialDiffuse, 1, value_ptr(textures.at("wall").mat.diffuse));
+    glUniform3fv(materialSpecular, 1, value_ptr(textures.at("wall").mat.specular));
+    glUniform1f(materialShininess, textures.at("wall").mat.shininess);
+    glBindTexture(GL_TEXTURE_2D, textures.at("wall").id);
     models.at("walls").Draw(shaderProgram);
     models.at("display").Draw(shaderProgram);
 
     glUniform1f(texScale, 20.0f);
-    glBindTexture(GL_TEXTURE_2D, textures.at("floor"));
+    glUniform3fv(materialAmbient, 1, value_ptr(textures.at("floor").mat.ambient));
+    glUniform3fv(materialDiffuse, 1, value_ptr(textures.at("floor").mat.diffuse));
+    glUniform3fv(materialSpecular, 1, value_ptr(textures.at("floor").mat.specular));
+    glUniform1f(materialShininess, textures.at("floor").mat.shininess);
+    glBindTexture(GL_TEXTURE_2D, textures.at("floor").id);
 	
     glActiveTexture(GL_TEXTURE1);
     glUniform1i(useSpecularMap, 1);
 
-	glBindTexture(GL_TEXTURE_2D, textures.at("specularFloor"));
+	glBindTexture(GL_TEXTURE_2D, textures.at("specularFloor").id);
     models.at("floor").Draw(shaderProgram);
     
     glUniform1i(useSpecularMap, 0);
 	glActiveTexture(GL_TEXTURE0);
 
     glUniform1f(texScale, 2.0f);
-    glBindTexture(GL_TEXTURE_2D, textures.at("frame2"));
+    glUniform3fv(materialAmbient, 1, value_ptr(textures.at("frame2").mat.ambient));
+    glUniform3fv(materialDiffuse, 1, value_ptr(textures.at("frame2").mat.diffuse));
+    glUniform3fv(materialSpecular, 1, value_ptr(textures.at("frame2").mat.specular));
+    glUniform1f(materialShininess, textures.at("frame2").mat.shininess);
+    glBindTexture(GL_TEXTURE_2D, textures.at("frame2").id);
     models.at("frame").Draw(shaderProgram);
     models.at("frame_001").Draw(shaderProgram);
     models.at("frame_002").Draw(shaderProgram);
@@ -377,36 +453,38 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std
     models.at("frame_005").Draw(shaderProgram);
     models.at("frame_006").Draw(shaderProgram);
 
-    //kazdy obraz inna tektura
-	//painting1 - obraz na scianie z przodu
     glUniform1f(texScale, 2.5f);
     glUniform2f(texShift, 1.0f, -0.2f);
-    glBindTexture(GL_TEXTURE_2D, textures.at("painting1"));
+    glUniform3fv(materialAmbient, 1, value_ptr(textures.at("painting1").mat.ambient));
+    glUniform3fv(materialDiffuse, 1, value_ptr(textures.at("painting1").mat.diffuse));
+    glUniform3fv(materialSpecular, 1, value_ptr(textures.at("painting1").mat.specular));
+    glUniform1f(materialShininess, textures.at("painting1").mat.shininess);
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting1").id);
     models.at("painting").Draw(shaderProgram);
 
-	//pozostale obrazy - na scianie z prawej
+
     glUniform1f(texRotation, -1.6f);
 	glUniform1f(texScale, 3.0f);
 	glUniform2f(texShift, 0.9f, 0.0f);
-    glBindTexture(GL_TEXTURE_2D, textures.at("painting2"));
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting2").id);
     models.at("painting_001").Draw(shaderProgram);
-    glBindTexture(GL_TEXTURE_2D, textures.at("painting3"));
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting3").id);
     models.at("painting_002").Draw(shaderProgram);
-    glBindTexture(GL_TEXTURE_2D, textures.at("painting4"));
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting4").id);
     models.at("painting_003").Draw(shaderProgram);
-    glBindTexture(GL_TEXTURE_2D, textures.at("painting5"));
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting5").id);
     models.at("painting_004").Draw(shaderProgram);
-    glBindTexture(GL_TEXTURE_2D, textures.at("painting6"));
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting6").id);
     models.at("painting_005").Draw(shaderProgram);
-    glBindTexture(GL_TEXTURE_2D, textures.at("painting7"));
+    glBindTexture(GL_TEXTURE_2D, textures.at("painting7").id);
     models.at("painting_006").Draw(shaderProgram);
     
-    glBindTexture(GL_TEXTURE_2D, textures.at("white"));
+    glBindTexture(GL_TEXTURE_2D, textures.at("white").id);
     models.at("torso").Draw(shaderProgram);
-	glBindTexture(GL_TEXTURE_2D, textures.at("greyStone"));
+	glBindTexture(GL_TEXTURE_2D, textures.at("greyStone").id);
     models.at("stand").Draw(shaderProgram);
 
-    glBindTexture(GL_TEXTURE_2D, textures.at("metal"));
+    glBindTexture(GL_TEXTURE_2D, textures.at("metal").id);
     models.at("fance").Draw(shaderProgram);
 	models.at("abstractfigure").Draw(shaderProgram);
 
@@ -415,7 +493,7 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std
     glUniform2f(texShift, 0.0f, 0.0f);   
 
 
-    glBindTexture(GL_TEXTURE_2D, textures.at("kitty"));
+    glBindTexture(GL_TEXTURE_2D, textures.at("kitty").id);
 
     glm::vec3 kittyRotation = glm::vec3(0.0f, 3.142f, 0.0f); // Twoja bazowa rotacja
 
@@ -427,7 +505,7 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std
 
 
     //nowy kotek
-    glm::vec3 kittyRotation2 = glm::vec3(0.0f, 4.712f, 0.0f); // Bazowa rotacja drugiego kota
+    glm::vec3 kittyRotation2 = glm::vec3(0.0f, 4.712f, 0.0f);
 
     models.at("kitty_head2").Transform(kittyPos2 + glm::vec3(0.0f, 0.479f, 0.0f), kittyRotation2);
     models.at("kitty_dress2").Transform(kittyPos2, kittyRotation2);
@@ -435,13 +513,13 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std
     models.at("kitty_dress2").Draw(shaderProgram);
 
 
-    glBindTexture(GL_TEXTURE_2D, textures.at("metal"));
+    glBindTexture(GL_TEXTURE_2D, textures.at("metal").id);
     models.at("shade_top").Draw(shaderProgram);
     models.at("shade_top_001").Draw(shaderProgram);
     models.at("shade_top_002").Draw(shaderProgram);
     models.at("shade_top_003").Draw(shaderProgram);
 
-    glBindTexture(GL_TEXTURE_2D, textures.at("white"));
+    glBindTexture(GL_TEXTURE_2D, textures.at("white").id);
     models.at("celling").Draw(shaderProgram);
 
     shaderLight.Activate();
@@ -463,7 +541,6 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std
         auto models = LoadAllModels();
         auto textures = LoadAllTextures();
 
-        // Aktywacja shadera i przypisanie tekstury do samplera tex0
         shaderProgram.Activate();
         shaderProgram.compileErrors(shaderProgram.ID,"PROGRAM");
 
@@ -480,7 +557,10 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std
         GLuint camPos = glGetUniformLocation(shaderProgram.ID, "cameraPos");
 		GLuint lightColorP = glGetUniformLocation(shaderProgram.ID, "lightColor");
 
-
+        GLuint materialDiffuse = glGetUniformLocation(shaderProgram.ID, "material.diffuse");
+        GLuint materialAmbient = glGetUniformLocation(shaderProgram.ID, "material.ambient");
+        GLuint materialSpecular = glGetUniformLocation(shaderProgram.ID, "material.specular");
+        GLuint materialShininess = glGetUniformLocation(shaderProgram.ID, "material.shininess");
 
         glEnable(GL_DEPTH_TEST);
 
@@ -513,7 +593,7 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std
             glm::vec3(11.0f, 0.0f, -17.0f),
             glm::vec3(7.0f, 0.0f, -17.0f),
             glm::vec3(7.0f, 0.0f, 3.0f),
-            glm::vec3(0.0f, 0.0f, 1.3f),       // Przed pierwszym obrazem (painting)
+            glm::vec3(0.0f, 0.0f, 1.3f)   
         };
 
         Kitty kitty1(kittyPath, 2.0f, 1.0f);
@@ -527,7 +607,7 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std
             glfwPollEvents();
             camera.Inputs(window);
             camera.updateMatrix(45.0f, 0.1f, 100.0f);
-            // Wyrenderuj klatkê
+
 
 
             shaderProgram.Activate();
@@ -555,12 +635,14 @@ void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std
             glm::vec3 pos1 = kitty1.update(deltaTime);
             glm::vec3 pos2 = kitty2.update(deltaTime);
 
-			renderScene(shaderProgram, shaderLight, camera ,models, textures, texScale, texShift, texRotation, useSpecularMap, pos1, pos2);
+			renderScene(shaderProgram, shaderLight, camera ,models, 
+                textures, texScale, texShift, texRotation, 
+                useSpecularMap, pos1, pos2,
+                materialAmbient, materialDiffuse, materialSpecular, materialShininess);
             glfwSwapBuffers(window);
             
         }
 
-        // Sprz¹tanie
 		shaderLight.Delete();
         shaderProgram.Delete();
         glfwDestroyWindow(window);
