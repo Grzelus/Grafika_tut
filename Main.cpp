@@ -69,7 +69,17 @@ struct TextureData {
     Material mat;
 };
 
+struct MainShaderLocs {
+    GLint texScale, texShift, texRotation, useSpecularMap;
+    struct {
+        GLint ambient, diffuse, specular, shininess;
+    } material;
+    GLint lightPos, cameraPos, lightColor;
 
+    void getLocs() {
+
+    }
+};
 
 // --- STA£E I DANE ---
 const float width = 800.0f;

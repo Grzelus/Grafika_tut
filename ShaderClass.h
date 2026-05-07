@@ -18,6 +18,7 @@ public:
 	// Constructor that build the Shader Program from 2 different shaders
 	Shader(const char* vertexFile, const char* fragmentFile);
 
+	GLint getLocs();
 	// Activates the Shader Program
 	void Activate();
 	// Deletes the Shader Program
