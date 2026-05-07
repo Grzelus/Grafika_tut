@@ -403,7 +403,7 @@ static std::vector<objectToRender> LoadAllObjectsToRender(std::map<std::string, 
     addObject("shade_top_003", "metal", glm::vec3(13.372f, 3.304f, -0.615f));
 
     // SUFIT (Domyœlna skala 1.0f)
-    addObject("celling", "white", glm::vec3(0.0f, 0.0f, 0.0f));
+    addObject("celling", "wall", glm::vec3(0.0f, 0.0f, 0.0f));
 
     return objects;
 }

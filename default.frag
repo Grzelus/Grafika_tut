@@ -45,14 +45,16 @@ vec4 calculateLighting(vec2 uv) {
     {
         vec3 lightVector = lightPos[i] - currentPosition;
         float distance = length(lightVector);
-        float intensityOfLight = 1.0f / (1.0f + linear * distance + quadratic * (distance * distance)); 
+        float intensityOfLight = 1.0f / (1.0f + linear * distance + quadratic * (distance* distance)); 
 
         vec3 lightDirection = normalize(lightVector);
-    
-        diffuse += max(dot(norm, lightDirection), 0.0f) * intensityOfLight; 
+        vec3 viewDirection = normalize(cameraPos - currentPosition);
+        vec3 halfwayDir = normalize(lightDirection + viewDirection);
+
+        diffuse += max(dot(norm, halfwayDir), 0.0f) * intensityOfLight; 
 
         float specularLight = 0.50f;
-        vec3 viewDirection = normalize(cameraPos - currentPosition);
+        
         vec3 reflectionDirection = reflect(-lightDirection, norm);
         float specAmount = pow(max(dot(viewDirection, reflectionDirection), 0.0f),material.shininess);
 
@@ -79,5 +81,6 @@ void main()
     vec2 uv = rotationMatrix * texScale * centeredTexCoord;   
     uv = uv + vec2(0.5f, 0.5f) + texShift; 
 
-    FragColor = calculateLighting(uv);
+    float gamma = 2.2f;
+    FragColor = pow(calculateLighting(uv), vec4(1.0f / gamma));
 }
