@@ -83,6 +83,7 @@ struct MainShaderLocs {
     GLint texScale;
     GLint texShift;
     GLint texRotation;
+    GLint lightSpaceMatrix;
     struct {
         GLint ambient;
         GLint diffuse;
@@ -90,6 +91,7 @@ struct MainShaderLocs {
         GLint shininess;
     } material;
     MainShaderLocs(Shader& shader) {
+		lightSpaceMatrix = glGetUniformLocation(shader.ID, "lightSpaceMatrix");
         tex0=glGetUniformLocation(shader.ID, "tex0");
         SpecularMap=glGetUniformLocation(shader.ID, "SpecularMap");
         model = glGetUniformLocation(shader.ID, "model");
@@ -107,6 +109,15 @@ struct MainShaderLocs {
         lightColor = glGetUniformLocation(shader.ID, "lightColor");
     }
 };
+struct ShadowShaderLocs {
+	GLint lightSpaceMatrix;
+    GLint model;
+
+    ShadowShaderLocs(Shader & shader) {
+        lightSpaceMatrix = glGetUniformLocation(shader.ID, "lightSpaceMatrix");
+        model = glGetUniformLocation(shader.ID, "model");
+    }
+};  
 
 struct objectToRender {
 	Model* model;
@@ -125,7 +136,7 @@ const float height = 800.0f;
 GLFWwindow* setupWindow(int w, int h, const char* title);
 GLuint setupTexture(const char* path);
 void texCheck(GLuint texture, const char* path);
-void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std::map<std::string, Model>& models, std::map<std::string, TextureData>& textures, const MainShaderLocs& mainLocs, glm::vec3 kittyPos, glm::vec3 kittyPos2);
+void renderScene(Shader& shaderProgram, Shader& shaderLight, Camera& camera, std::map<std::string, Model>& models, std::map<std::string, TextureData>& textures, const ShadowShaderLocs& shadowLocs, glm::vec3 kittyPos, glm::vec3 kittyPos2);
 
 // --- FUNKCJE POMOCNICZE ---
 
@@ -137,7 +148,14 @@ static std::vector<glm::vec3> GetBulbPositions() {
         glm::vec3(13.372f, 3.304f, -0.615f)   // bulb_003
     };
 }
-
+static std::vector<glm::vec3> GetLightsPositions() {
+    return {
+        glm::vec3(-0.000f, 2.030f, -0.401f),  // bulb
+        glm::vec3(-0.000f, 2.023f, -16.322f), // bulb_001
+        glm::vec3(13.372f, 3.304f, -5.521f),  // bulb_002
+        glm::vec3(13.372f, 3.304f, -0.615f)   // bulb_003
+    };
+}
 
 static std::map<std::string, Model> LoadAllModels() {
     std::map<std::string, Model> models;
@@ -481,7 +499,7 @@ void texCheck(GLuint texture, const char* path) {
     }
 }
 
-void renderScene2(Shader& shaderProgram,const MainShaderLocs& mainLocs, const std::vector<objectToRender>& objects) {
+void renderScene(Shader& shaderProgram,const MainShaderLocs& mainLocs, const std::vector<objectToRender>& objects) {
     auto setMaterial = [&](const Material& mat) {
         glUniform3fv(mainLocs.material.ambient, 1, glm::value_ptr(mat.ambient));
         glUniform3fv(mainLocs.material.diffuse, 1, glm::value_ptr(mat.diffuse));
@@ -507,6 +525,15 @@ void renderScene2(Shader& shaderProgram,const MainShaderLocs& mainLocs, const st
     }
 }
 
+void renderShadowScene(Shader& shaderShadow, const ShadowShaderLocs& shadowLocs, const std::vector<objectToRender>& objects) {
+    for (auto& objectToRender : objects) {
+
+        // Przekazanie transformacji, w tym pozycji i rotacji
+        objectToRender.model->Transform(objectToRender.position, objectToRender.rotations);
+        // Rysowanie
+        objectToRender.model->Draw(shaderShadow);
+    }
+}
 
 void renderAudience(Shader& shaderProgram, const MainShaderLocs& mainLocs, std::map<std::string, Model>& models, std::map<std::string, TextureData>& textures, glm::vec3 kittyPos1, glm::vec3 kittyPos2) {
     // Resetowanie przesuniêæ i obrotów tekstur na domyœlne (jeœli we wczeœniejszym wywo³aniu jakieœ by³y zmieniane)
@@ -536,46 +563,94 @@ void renderAudience(Shader& shaderProgram, const MainShaderLocs& mainLocs, std::
     // Cia³o (sukienka)
     models.at("kitty_dress").Transform(kittyPos1, kittyRotation1);
     models.at("kitty_dress").Draw(shaderProgram);
-
-
-    // --- KOTEK 2 ---
-    // Podobnie u¿ywamy tej samej podpiêtej tekstury, tylko innych modeli
+}
+void renderShadowAudience(Shader & shaderProgram, const ShadowShaderLocs & shadowLocs, std::map<std::string, Model>&models, glm::vec3 kittyPos1, glm::vec3 kittyPos2) {
+    glm::vec3 kittyRotation1 = glm::vec3(0.0f, 3.142f, 0.0f);
+    models.at("kitty_head").Transform(kittyPos1 + glm::vec3(0.0f, 0.479f, 0.0f), kittyRotation1);
+    models.at("kitty_head").Draw(shaderProgram);
+    models.at("kitty_dress").Transform(kittyPos1, kittyRotation1);        
+    models.at("kitty_dress").Draw(shaderProgram);
     glm::vec3 kittyRotation2 = glm::vec3(0.0f, 4.712f, 0.0f);
-
     models.at("kitty_head2").Transform(kittyPos2 + glm::vec3(0.0f, 0.479f, 0.0f), kittyRotation2);
     models.at("kitty_head2").Draw(shaderProgram);
-
     models.at("kitty_dress2").Transform(kittyPos2, kittyRotation2);
     models.at("kitty_dress2").Draw(shaderProgram);
 }
 
 // --- MAIN ---
 int main() {
-    GLFWwindow* window = setupWindow(800, 800, "Art Galery");
+    GLFWwindow* window = setupWindow(width, height, "Art Galery");
     if (!window) return -1;
 
     Shader shaderProgram("default.vert", "default.frag");
     Shader shaderLight("light.vert", "light.frag");
-    
+	Shader shaderShadow("depth.vert", "depth.frag");
+
 	//loading neccersary data
     auto models = LoadAllModels();
     auto textures = LoadAllTextures();
 	auto objectsToRender = LoadAllObjectsToRender(models, textures);
-    
+
+    static std::vector<glm::vec3> lightPositions = GetLightsPositions();
+
+	//settings for shaderProgram
     shaderProgram.Activate();
     shaderProgram.compileErrors(shaderProgram.ID,"PROGRAM");
 
-    MainShaderLocs mainLocs(shaderProgram);
-    
+    const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 
-    static std::vector<glm::vec3> lightPositions = GetBulbPositions();
+    unsigned int depthMapFBO;
+	glGenFramebuffers(1, &depthMapFBO);
+    
+	unsigned int depthMap;
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+        SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // 1. Definiujemy parametry rzutowania œwiat³a
+    float near_plane = 0.005f, far_plane = 50.0f;
+    // U¿ywamy perspektywy, bo ¿arówka jest blisko obiektów
+    glm::mat4 lightProjection = glm::perspective(glm::radians(120.0f), 1.0f, near_plane, far_plane);
+    // Definiujemy pozycjê ¿arówki 
+    // Pobieramy pozycjê pierwszej ¿arówki 
+    glm::vec3 lightPos = lightPositions[0];    
+
+    glm::vec3 StaticTarget =lightPositions[0] + glm::vec3(0.0f, -1.0f, 0.0f);
+    glm::mat4 lightView = glm::lookAt(lightPos, StaticTarget, glm::vec3(0.0, 0.0f, 1.0));
+    // £¹czymy w jedn¹ macierz
+    glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {std::cout<<"Framebuffer not complete!" << std::endl; }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    MainShaderLocs mainLocs(shaderProgram);
+	ShadowShaderLocs shadowLocs(shaderShadow);
+
+	//bulb positions 
+    
     glUniform3fv(mainLocs.lightPos, 4, glm::value_ptr(lightPositions[0]));
 
     glEnable(GL_DEPTH_TEST);
-
+    
+    //camera setup
     Camera camera(width, height, glm::vec3(0.0f, 1.0f, 2.0f));
 
-    // Ustawienia dla shaderLight
+    // settings for shaderLight
     shaderLight.Activate();
     shaderLight.compileErrors(shaderLight.ID, "Light");
 
@@ -605,6 +680,9 @@ int main() {
     Kitty kitty1(kittyPath, 2.0f, 1.0f);
     Kitty kitty2(kittyPath2, 2.0f, 1.0f);
 
+    float crntTime;
+    float deltaTime;
+
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.07f, 0.1f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -613,7 +691,35 @@ int main() {
         camera.Inputs(window);
         camera.updateMatrix(45.0f, 0.1f, 100.0f);
 
+        crntTime = glfwGetTime();
+        static float prevTime = 0.0f;
+        deltaTime = crntTime - prevTime;
+        prevTime = crntTime;
+
+        glm::vec3 pos1 = kitty1.update(deltaTime);
+        glm::vec3 pos2 = kitty2.update(deltaTime);
+
+     
+		shaderShadow.Activate();
+		glUniformMatrix4fv(shadowLocs.lightSpaceMatrix,1, GL_FALSE,glm::value_ptr(lightSpaceMatrix));
+
+        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        
+        renderShadowScene(shaderShadow, shadowLocs, objectsToRender);
+		renderShadowAudience(shaderShadow, shadowLocs, models, pos1, pos2);
+
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, depthMap);
+		glActiveTexture(GL_TEXTURE0);
         shaderProgram.Activate();
+
+        glUniformMatrix4fv(mainLocs.lightSpaceMatrix, 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
         camera.Matrix(shaderProgram, "camMatrix");
         glUniform3f(mainLocs.cameraPos, camera.Position.x, camera.Position.y, camera.Position.z);
 
@@ -629,22 +735,18 @@ int main() {
         camera.Matrix(shaderLight, "camMatrix");
         glUniform4f(lightColorL, 1.0f, 1.0f, 1.0f, 1.0f);
 
-        float crntTime = glfwGetTime();
-        static float prevTime = 0.0f;
-        float deltaTime = crntTime - prevTime;
-        prevTime = crntTime;
-
-        glm::vec3 pos1 = kitty1.update(deltaTime);
-        glm::vec3 pos2 = kitty2.update(deltaTime);
 
         shaderProgram.Activate();
-		renderScene2(shaderProgram, mainLocs, objectsToRender);
-     //   renderScene(shaderProgram, shaderLight, camera, models, textures, mainLocs, pos1, pos2);
+        //render static objects
+        renderScene(shaderProgram, mainLocs, objectsToRender);
+        //render moving cats
         renderAudience(shaderProgram, mainLocs, models, textures, pos1, pos2);
 
         shaderLight.Activate();
         camera.Matrix(shaderLight, "camMatrix");
         glUniform4f(lightColorL, 1.0f, 1.0f, 1.0f, 1.0f);
+
+		//render light sources (bulbs)
         models.at("bulb").Draw(shaderLight);
         models.at("bulb_001").Draw(shaderLight);
         models.at("bulb_002").Draw(shaderLight);
@@ -652,7 +754,7 @@ int main() {
 
         glfwSwapBuffers(window);
     }
-
+    glDeleteFramebuffers(1, &depthMapFBO);
     shaderLight.Delete();
     shaderProgram.Delete();
     glfwDestroyWindow(window);

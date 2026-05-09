@@ -68,6 +68,12 @@
     <None Include="light.vert">
       <Filter>Pliki zasobów\Shaders</Filter>
     </None>
+    <None Include="depth.frag">
+      <Filter>Pliki zasobów\Shaders</Filter>
+    </None>
+    <None Include="depth.vert">
+      <Filter>Pliki zasobów\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderClass.h">
